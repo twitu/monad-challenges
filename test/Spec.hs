@@ -12,4 +12,9 @@ main = defaultMain $
                                                               (v2, _) = randOdd'  $ mkSeed 1
                                                               (v3, _) = randTen'  $ mkSeed 1
                                                           in v1 * v2 * v3) 189908109902700
+    assertEqual "randPair with seed 1 test" (let (p, _) = randPair $ mkSeed 1 in p) ('l', 282475249)
+    assertEqual "generalPair and randPair comparison test" (randPair $ mkSeed 1) (generalPair randLetter rand $ mkSeed 1)
+    assertEqual "generalPair 2 and generalPair comparison test" (generalPair randLetter rand $ mkSeed 1) (generalPair2 randLetter rand $ mkSeed 1)
+    assertEqual "repRandom and 3 randLetter comparison test" (let (v, _) = repRandom (replicate 3 randLetter) (mkSeed 1)
+                                                              in v) randString3
 
