@@ -1,7 +1,9 @@
 import Test.Tasty
 import Test.Tasty.HUnit
-import Set1
 import MCPrelude
+import Prelude (IO)
+import Set1
+import Set2
 
 main :: IO ()
 main = defaultMain $
@@ -17,4 +19,43 @@ main = defaultMain $
     assertEqual "generalPair 2 and generalPair comparison test" (generalPair randLetter rand $ mkSeed 1) (generalPair2 randLetter rand $ mkSeed 1)
     assertEqual "repRandom and 3 randLetter comparison test" (let (v, _) = repRandom (replicate 3 randLetter) (mkSeed 1)
                                                               in v) randString3
+
+    assertEqual "Set 2" (queryGreek greekDataA "alpha") (Just 2.0)
+    assertEqual "Set 2" (queryGreek greekDataA "beta") Nothing
+    assertEqual "Set 2" (queryGreek greekDataA "gamma") (Just 3.3333333333333335)
+    assertEqual "Set 2" (queryGreek greekDataA "delta") Nothing
+    assertEqual "Set 2" (queryGreek greekDataA "zeta") Nothing
+    assertEqual "Set 2" (queryGreek greekDataB "rho") Nothing
+    assertEqual "Set 2" (queryGreek greekDataB "phi") (Just 0.24528301886792453)
+    assertEqual "Set 2" (queryGreek greekDataB "chi") (Just 9.095238095238095)
+    assertEqual "Set 2" (queryGreek greekDataB "psi") Nothing
+    assertEqual "Set 2" (queryGreek greekDataB "omega") (Just 24.0)
+
+    assertEqual "Set 2" (queryGreek2 greekDataA "alpha") (Just 2.0)
+    assertEqual "Set 2" (queryGreek2 greekDataA "beta") Nothing
+    assertEqual "Set 2" (queryGreek2 greekDataA "gamma") (Just 3.3333333333333335)
+    assertEqual "Set 2" (queryGreek2 greekDataA "delta") Nothing
+    assertEqual "Set 2" (queryGreek2 greekDataA "zeta") Nothing
+    assertEqual "Set 2" (queryGreek2 greekDataB "rho") Nothing
+    assertEqual "Set 2" (queryGreek2 greekDataB "phi") (Just 0.24528301886792453)
+    assertEqual "Set 2" (queryGreek2 greekDataB "chi") (Just 9.095238095238095)
+    assertEqual "Set 2" (queryGreek2 greekDataB "psi") Nothing
+    assertEqual "Set 2" (queryGreek2 greekDataB "omega") (Just 24.0)
+
+    assertEqual "yLink" (addSalaries salaries "bob" "alice") (addSalaries2 salaries "bob" "alice")
+    assertEqual "yLink" (addSalaries salaries "bob" "alic") (addSalaries2 salaries "bob" "alic")
+
+    assertEqual "tailProd" (tailProd []) Nothing
+    assertEqual "tailProd" (tailProd [1, 2, 3]) (Just 6)
+    assertEqual "tailProd" (tailProd [2]) (Just 1)
+
+    assertEqual "tailSum" (tailSum []) Nothing
+    assertEqual "tailSum" (tailSum [1, 2, 3]) (Just 5)
+    assertEqual "tailSum" (tailSum [2]) (Just 0)
+
+    assertEqual "tailMax" (tailMax [1]) Nothing
+    assertEqual "tailMax" (tailMax [1, 5, 4]) (Just 5)
+
+    assertEqual "tailMin" (tailMin [2]) Nothing
+    assertEqual "tailMin" (tailMin [1, 5, 4]) (Just 4)
 
