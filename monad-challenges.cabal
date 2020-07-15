@@ -29,6 +29,7 @@ library
   exposed-modules:
       Set1
       Set2
+      Set3
       MCPrelude
   other-modules:
       Paths_monad_challenges
