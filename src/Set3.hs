@@ -11,10 +11,10 @@ import           Set4
 --------------------------------------------------------
 
 allPairs :: [a] -> [b] -> [(a, b)]
-allPairs []       _        = []
-allPairs [_     ] []       = []
-allPairs [a     ] (x : xs) = (a, x) : allPairs [a] xs
-allPairs (a : as) xs       = allPairs [a] xs ++ allPairs as xs
+allPairs as bs = do
+  a <- as
+  b <- bs
+  return (a, b)
 
 --------------------------------------------------------
 -- Part 2
@@ -29,10 +29,10 @@ instance Eq Card where
   (==) (Card n1 c1) (Card n2 c2) = n1 == n2 && c1 == c2
 
 allCards :: [Int] -> [String] -> [Card]
-allCards []       _        = []
-allCards [_     ] []       = []
-allCards [a     ] (x : xs) = Card a x : allCards [a] xs
-allCards (a : as) xs       = allCards [a] xs ++ allCards as xs
+allCards values hands = do
+  v <- values
+  h <- hands
+  return $ Card v h
 
 --------------------------------------------------------
 -- Part 3

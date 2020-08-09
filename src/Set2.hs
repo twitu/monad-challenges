@@ -47,26 +47,13 @@ minimumMay as  = Just $ foldl1 (min) as
 ----------------------------------------
 
 queryGreek :: GreekData -> String -> Maybe Double
-queryGreek gdata key =
-  let val = case lookupMay key gdata of
-        Nothing -> Nothing
-        Just xs -> Just xs
-      mxv = case val of
-        Nothing -> Nothing
-        Just xs -> case tailMay xs of
-          Nothing -> Nothing
-          Just ts -> case maximumMay ts of
-            Nothing -> Nothing
-            Just mx -> Just mx
-      hdv = case val of
-        Nothing -> Nothing
-        Just xs -> case headMay xs of
-          Nothing -> Nothing
-          Just hd -> Just hd
-      ans = case (mxv, hdv) of
-        (Just n, Just d) -> divMay (fromIntegral n) (fromIntegral d)
-        (_     , _     ) -> Nothing
-  in  ans
+queryGreek gdata key = do
+  val <- lookupMay key gdata
+  ts <- tailMay val
+  mxv <- maximumMay ts
+  hdv <- headMay val
+  ans <- divMay (fromIntegral mxv) (fromIntegral hdv)
+  return ans
 
 ----------------------------------------
 -- Part 4
@@ -93,8 +80,10 @@ queryGreek2 gdata key =
 ----------------------------------------
 
 addSalaries :: [(String, Integer)] -> String -> String -> Maybe Integer
-addSalaries info k1 k2 =
-  link (lookupMay k1 info) (\v1 -> link (lookupMay k2 info) (Just . (v1 +)))
+addSalaries info k1 k2 = do
+  v1 <- lookupMay k1 info
+  v2 <- lookupMay k2 info
+  return $ v1 + v2
 
 yLink :: (a -> b -> c) -> Maybe a -> Maybe b -> Maybe c
 yLink f ma mb = link (ma) (\v1 -> link (mb) (Just . f v1))
@@ -110,17 +99,24 @@ mkMaybe = Just
 ----------------------------------------
 
 tailProd :: Num a => [a] -> Maybe a
-tailProd xs = transMaybe product (tailMay xs)
+tailProd xs = do
+  vals <- tailMay xs
+  return $ product vals
 
 tailSum :: Num a => [a] -> Maybe a
-tailSum xs = transMaybe sum (tailMay xs)
+tailSum xs = do
+  vals <- tailMay xs
+  return $ sum vals
 
 transMaybe :: (a -> b) -> Maybe a -> Maybe b
 transMaybe f (Just x) = mkMaybe . f $ x
 transMaybe _ Nothing  = Nothing
 
 tailMax :: Ord a => [a] -> Maybe a
-tailMax xs = combine $ transMaybe (maximumMay) (tailMay xs)
+tailMax xs = do
+  vals <- tailMay xs
+  maxv <- maximumMay vals
+  return maxv
 
 tailMin :: Ord a => [a] -> Maybe a
 tailMin xs = combine $ transMaybe (minimumMay) (tailMay xs)

@@ -88,7 +88,10 @@ sequence []         = return []
 sequence (ga : gas) = ga >>= (\a -> sequence gas >>= (\as -> return $ a : as))
 
 liftM2 :: Monad m => (a -> b -> c) -> m a -> m b -> m c
-liftM2 f ma mb = ma >>= (\a -> mb >>= (return . f a))
+liftM2 f ma mb = do
+  a <- ma
+  b <- mb
+  return $ f a b
 
 -- from Set2.hs
 
@@ -101,7 +104,11 @@ join = flip (>>=) id
 -- from Set3.hs
 
 liftM3 :: Monad m => (a -> b -> c -> d) -> m a -> m b -> m c -> m d
-liftM3 f ma mb mc = ma >>= (\a -> mb >>= (\b -> mc >>= (return . f a b)))
+liftM3 f ma mb mc = do
+  a <- ma
+  b <- mb
+  c <- mc
+  return $ f a b c
 
 ap :: Monad m => m (a -> b) -> m a -> m b
 ap mf ma = mf >>= (\f -> ma >>= (return . f))
