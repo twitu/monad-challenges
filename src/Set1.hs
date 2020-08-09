@@ -3,82 +3,67 @@
 
 module Set1 where
 
-import MCPrelude
+import           MCPrelude
+import           Set4
 
 ----------------------------------------------
 -- Part 1
 ----------------------------------------------
 
-type Gen a = Seed -> (a, Seed)
-
 fiveRands :: [Integer]
-fiveRands = let
-                (r1, s1) = rand $ mkSeed 1
-                (r2, s2) = rand s1
-                (r3, s3) = rand s2
-                (r4, s4) = rand s3
-                (r5, _)  = rand s4
-            in [r1, r2, r3, r4, r5]
-
+fiveRands = evalGen (sequence $ replicate 5 (Gen rand)) (mkSeed 1)
 
 randLetter :: Gen Char
-randLetter seed = let (val, seed') = rand seed
-                  in (toLetter val, seed')
+randLetter = Gen rand >>= (return . toLetter)
 
 randString3 :: String
-randString3 = let
-                (c1, s1) = randLetter $ mkSeed 1
-                (c2, s2) = randLetter s1
-                (c3, _)  = randLetter s2
-            in [c1, c2, c3]
+randString3 =
+  evalGen
+      (   randLetter
+      >>= (\c1 ->
+            randLetter
+              >>= (\c2 -> randLetter >>= (\c3 -> return [c1, c2, c3]))
+          )
+      )
+    $ mkSeed 1
 
 ----------------------------------------------
 -- Part 2
 ----------------------------------------------
 
 randEven :: Gen Integer
-randEven seed = let (v, s') = rand seed
-                in (v * 2, s')
+randEven = Gen rand >>= (return . (2 *))
 
 randOdd :: Gen Integer
-randOdd seed = let (v, s') = randEven seed
-               in (v + 1, s')
+randOdd = randEven >>= (return . (1 +))
 
 randTen :: Gen Integer
-randTen seed = let (v, s') = rand seed
-               in (v * 10, s')
+randTen = Gen rand >>= (return . (10 *))
 
 generalA :: (a -> b) -> Gen a -> Gen b
-generalA op gen = \seed -> let (v , s') = gen seed
-                           in (op v, s')
+generalA op ga = ga >>= (return . op)
 
 randEven' :: Gen Integer
-randEven' seed = generalA (2*) rand seed
+randEven' = generalA (2 *) $ Gen rand
 
 randOdd' :: Gen Integer
-randOdd'  seed = generalA (1+) randEven' seed
+randOdd' = generalA (1 +) randEven'
 
 randTen' :: Gen Integer
-randTen'  seed = generalA (10*) rand seed
+randTen' = generalA (10 *) $ Gen rand
 
 ----------------------------------------------
 -- Part 3
 ----------------------------------------------
 
 randPair :: Gen (Char, Integer)
-randPair seed = let (c, s')  = randLetter seed
-                    (i, s'') = rand s'
-                in ((c, i), s'')
+randPair = randLetter >>= (\c -> (Gen rand) >>= (\i -> return (c, i)))
 
 generalPair :: Gen a -> Gen b -> Gen (a, b)
-generalPair ga gb = \seed -> let (a', s')  = ga seed
-                                 (b', s'') = gb s'
-                             in ((a', b'), s'')
+generalPair ga gb = ga >>= (\a -> gb >>= (return . (,) a))
 
 generalB :: (a -> b -> c) -> Gen a -> Gen b -> Gen c
-generalB f ga gb = \seed -> let (a', s')  = ga seed
-                                (b', s'') = gb s'
-                             in (f a' b', s'')
+generalB = liftM2
 
 generalPair2 :: Gen a -> Gen b -> Gen (a, b)
 generalPair2 = generalB (,)
@@ -88,17 +73,30 @@ generalPair2 = generalB (,)
 ----------------------------------------------
 
 repRandom :: [Gen a] -> Gen [a]
-repRandom [] = \seed -> ([], seed)
-repRandom [ga] = generalA (:[]) ga
-repRandom (ga:gas) = generalB (:) ga (repRandom gas)
+repRandom = sequence
 
 ----------------------------------------------
 -- Part 5
 ----------------------------------------------
 
 genTwo :: Gen a -> (a -> Gen b) -> Gen b
-genTwo ga f = uncurry f . ga
+genTwo = (>>=)
 
 mkGen :: a -> Gen a
-mkGen a = \seed -> (a, seed)
+mkGen = return
 
+----------------------------------------------
+-- Part 6
+----------------------------------------------
+
+generalB2 :: (a -> b -> c) -> Gen a -> Gen b -> Gen c
+generalB2 f ga gb = genTwo ga (\v1 -> genTwo gb (mkGen . f v1))
+
+generalPair2' :: Gen a -> Gen b -> Gen (a, b)
+generalPair2' = generalB2 (,)
+
+repRandom' :: [Gen a] -> Gen [a]
+repRandom' []   = mkGen []
+repRandom' [ga] = generalA (: []) ga
+repRandom' (ga : gas) =
+  genTwo ga (\v -> genTwo (repRandom gas) (mkGen . (:) v))
